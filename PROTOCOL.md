@@ -1,4 +1,4 @@
-# influx-agent wire protocol
+# influxd wire protocol
 
 Schema version: **1**. All payloads are JSON, UTF-8. On the WebSocket channel
 exactly one JSON object is sent per frame.
@@ -7,8 +7,8 @@ There are two channels:
 
 | Channel        | Direction         | Transport                    | Purpose            |
 |----------------|-------------------|------------------------------|--------------------|
-| Realtime       | agent → client    | WebSocket (`/v1/stream`)     | live snapshots     |
-| Historical     | agent → Panel     | HTTP POST (`/api/agent/report`) | rolled-up reports |
+| Realtime       | daemon → client    | WebSocket (`/v1/stream`)     | live snapshots     |
+| Historical     | daemon → Panel     | HTTP POST (`/api/daemon/report`) | rolled-up reports |
 
 ---
 
@@ -24,12 +24,12 @@ Authorization: Bearer <token>
   the REST/upgrade request, or WebSocket close code `4001` once upgraded.
 - The realtime server **refuses to start with an empty token** unless
   `--insecure` is passed *and* `listen` is a loopback address.
-- `agent_key` is the single token for both channels. It may be split into
+- `daemon_key` is the single token for both channels. It may be split into
   `stream_token` (realtime) and `push_key` (historical) if desired.
 
 ### Historical push signature (HMAC)
 
-Every `POST /api/agent/report` is signed:
+Every `POST /api/daemon/report` is signed:
 
 ```
 X-Signature: sha256=<hex>
@@ -44,7 +44,7 @@ Other headers on the push:
 
 ```
 Authorization: Bearer <push_key>
-X-Agent-Version: <semver>
+X-Daemon-Version: <semver>
 Content-Type: application/json
 Content-Encoding: gzip          (optional; body is gzipped when present)
 ```
@@ -79,11 +79,11 @@ GET {listen}/v1/stream        Upgrade: websocket ; Authorization: Bearer <token>
     "cpu_model": "AMD Ryzen 9 270",
     "physical_cores": 8,
     "logical_cores": 16,
-    "agent_version": "0.1.0",
+    "daemon_version": "0.1.0",
     "tags": { "role": "web" }
   },
   "sample_interval_ms": 2000,
-  "agent_version": "0.1.0"
+  "daemon_version": "0.1.0"
 }
 ```
 
@@ -112,7 +112,7 @@ consecutive pongs (~40s).
 |---------------------|--------|----------|
 | `GET /v1/snapshot`  | Bearer | `200` — a single fresh Snapshot |
 | `GET /v1/healthz`   | none   | `200 {"status":"ok","uptime_seconds":N,"version":"..."}` |
-| `GET /v1/metrics`   | Bearer | `200` — the agent's own resource use (goroutines, heap, GC, uptime) |
+| `GET /v1/metrics`   | Bearer | `200` — the daemon's own resource use (goroutines, heap, GC, uptime) |
 
 ---
 
@@ -153,7 +153,7 @@ start they are `null` and `host.warming_up` is `true`. A negative counter delta
     "platform_version": "24.04", "kernel_version": "6.8.0-40-generic",
     "arch": "x86_64", "virtualization_role": "guest", "virtualization_system": "kvm",
     "uptime_seconds": 812344, "boot_time": "2026-09-01T09:12:44Z",
-    "agent_version": "0.1.0", "tags": { "role": "web" },
+    "daemon_version": "0.1.0", "tags": { "role": "web" },
     "captured_at": "2026-09-10T14:03:12.501Z", "monotonic_seq": 41007,
     "warming_up": false
   },
@@ -213,20 +213,20 @@ start they are `null` and `host.warming_up` is `true`. A negative counter delta
 }
 ```
 
-> Run `influx-agent oneshot` for a byte-accurate example on your own host.
+> Run `influxd oneshot` for a byte-accurate example on your own host.
 
 ---
 
 ## Historical: the Report
 
 ```
-POST {panel_url}/api/agent/report
+POST {panel_url}/api/daemon/report
 ```
 
 ```json
 {
   "schema_version": 1,
-  "agent_version": "0.1.0",
+  "daemon_version": "0.1.0",
   "report_seq": 128,
   "boot_id": "6f3d2b1a-1c9e-4a77-8b0c-2f5e9d0a1b23",
   "window": { "start": "2026-09-10T14:00:00Z", "end": "2026-09-10T14:00:30Z", "sample_count": 15 },
@@ -244,17 +244,17 @@ POST {panel_url}/api/agent/report
   },
   "snapshot": { "...": "the most recent full Snapshot" },
   "events": [
-    { "at": "2026-09-10T14:00:00Z", "kind": "agent_start", "detail": "0.1.0 (commit abc1234, built ...)" }
+    { "at": "2026-09-10T14:00:00Z", "kind": "daemon_start", "detail": "0.1.0 (commit abc1234, built ...)" }
   ]
 }
 ```
 
 `event.kind` is one of `disk_full | temp_crit | oom | service_failed |
-agent_start`. The list is best-effort and may be empty.
+daemon_start`. The list is best-effort and may be empty.
 
 ### Responses & delivery guarantees
 
-| Panel response      | Agent behaviour                                   |
+| Panel response      | Daemon behaviour                                   |
 |---------------------|--------------------------------------------------|
 | `202` (or `200`)    | success — report acknowledged                     |
 | `4xx`               | drop the report, log a warning, do not retry      |
@@ -265,9 +265,9 @@ Delivery is **at-least-once**:
 - Failed reports are written to `buffer_dir` as gzipped files in a ring capped
   at `buffer_max_bytes` (default 64 MiB); the oldest are evicted first.
 - Retries use exponential backoff with full jitter: `1s → … → 5m` ceiling.
-- On startup the agent flushes buffered reports **oldest-first** before sending
+- On startup the daemon flushes buffered reports **oldest-first** before sending
   new ones.
-- `report_seq` is monotonic per agent process and `boot_id` is stable per OS
+- `report_seq` is monotonic per daemon process and `boot_id` is stable per OS
   boot (Linux `/proc/sys/kernel/random/boot_id`, else random per process) — the
   Panel should dedupe on `(boot_id, report_seq)`.
 
@@ -279,8 +279,8 @@ The Panel (AdonisJS) side of this protocol is built:
 
 **Storage**
 
-- `servers` gained `agent_key` (unique), `agent_listen_url`, `agent_version`,
-  `agent_boot_id`, `agent_last_report_at`.
+- `servers` gained `daemon_key` (unique), `daemon_listen_url`, `daemon_version`,
+  `daemon_boot_id`, `daemon_last_report_at`.
 - `server_reports` stores every ingested report: `server_id`, `captured_at`,
   `boot_id`, `report_seq`, the full `payload` (JSON text), and promoted scalar
   columns for charting (`cpu_pct`, `load_1/5/15`, `mem_used_pct`,
@@ -289,18 +289,18 @@ The Panel (AdonisJS) side of this protocol is built:
   `uptime_seconds`). Unique `(server_id, boot_id, report_seq)` for idempotent
   ingest; index `(server_id, captured_at)`.
 
-**Ingest** — `POST /api/agent/report` (no session; `AgentAuthMiddleware` does
+**Ingest** — `POST /api/daemon/report` (no session; `DaemonAuthMiddleware` does
 bearer + constant-time key match + `X-Signature` HMAC). Validates the envelope,
 dedupes on `(boot_id, report_seq)`, promotes scalars from the snapshot, advances
-`agent_last_report_at`/`agent_version` for newer samples, and fans the snapshot
+`daemon_last_report_at`/`daemon_version` for newer samples, and fans the snapshot
 to any live viewers. Returns `202`. (Gzip request bodies are not yet accepted —
 the daemon's `Content-Encoding: gzip` is opt-in and off by default.)
 
-**Realtime relay** — `agent_stream_hub` opens one WS to
-`{agent_listen_url}/v1/stream` per server, shared by all viewers, lazily and
+**Realtime relay** — `daemon_stream_hub` opens one WS to
+`{daemon_listen_url}/v1/stream` per server, shared by all viewers, lazily and
 with reconnect/backoff. The browser consumes it over SSE at
 `GET /app/servers/:id/stream` (`status` / `hello` / `snapshot` frames). With no
-`agent_listen_url` set, historical data still flows and the ingest path pushes
+`daemon_listen_url` set, historical data still flows and the ingest path pushes
 snapshots to viewers.
 
 **UI** — per-server tabs under `/app/servers/:id`: Overview (live tiles +
@@ -312,4 +312,3 @@ unpair) lives on the Settings tab.
 
 **Retention** — `node ace metrics:prune` deletes reports older than
 `METRICS_RETENTION_DAYS` (env, default 30). Wire it to cron/a scheduled agent.
-
