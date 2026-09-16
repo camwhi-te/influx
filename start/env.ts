@@ -26,6 +26,6 @@ export default await Env.create(new URL('../', import.meta.url), {
   SESSION_DRIVER: Env.schema.enum(['cookie', 'memory', 'database'] as const),
 
   // Monitoring
-  /** How many days of full-resolution agent reports to keep (prune command). */
+  /** How many days of full-resolution daemon reports to keep (prune command). */
   METRICS_RETENTION_DAYS: Env.schema.number.optional(),
 })

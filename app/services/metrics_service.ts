@@ -1,7 +1,7 @@
 import db from '@adonisjs/lucid/services/db'
 import ServerReport from '#models/server_report'
 import { DateTime } from 'luxon'
-import type { AgentReport } from '#services/agent_protocol'
+import type { DaemonReport } from '#services/daemon_protocol'
 
 export const METRIC_RANGES = {
   '1h': { label: 'Last hour', seconds: 3_600, bucketSeconds: 60 },
@@ -176,7 +176,7 @@ class MetricsService {
   }
 
   /** Most recent stored report document (used as a fallback for the live view). */
-  async latest(serverId: number): Promise<{ capturedAt: string; report: AgentReport } | null> {
+  async latest(serverId: number): Promise<{ capturedAt: string; report: DaemonReport } | null> {
     const row = await ServerReport.query()
       .where('serverId', serverId)
       .orderBy('capturedAt', 'desc')

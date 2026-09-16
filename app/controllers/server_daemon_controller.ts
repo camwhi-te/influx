@@ -1,15 +1,15 @@
 import { randomBytes } from 'node:crypto'
 import { PassThrough } from 'node:stream'
 import Server from '#models/server'
-import { agentSettingsValidator } from '#validators/server'
-import { agentStreamHub } from '#services/agent_stream_hub'
+import { daemonSettingsValidator } from '#validators/server'
+import { daemonStreamHub } from '#services/daemon_stream_hub'
 import type { HttpContext } from '@adonisjs/core/http'
 
 /**
  * Pairing + live stream for a server's monitoring daemon. All routes are
  * scoped to the authenticated owner.
  */
-export default class ServerAgentController {
+export default class ServerDaemonController {
   private findServer(ctx: HttpContext) {
     return Server.query()
       .where('userId', ctx.auth.user!.id)
@@ -17,16 +17,16 @@ export default class ServerAgentController {
       .firstOrFail()
   }
 
-  /** Create or rotate the agent key. */
+  /** Create or rotate the daemon key. */
   async generateKey(ctx: HttpContext) {
     const server = await this.findServer(ctx)
-    const rotated = server.agentPaired
+    const rotated = server.daemonPaired
 
-    server.agentKey = randomBytes(32).toString('base64url')
-    server.agentBootId = null
+    server.daemonKey = randomBytes(32).toString('base64url')
+    server.daemonBootId = null
     await server.save()
 
-    ctx.session.flash('success', rotated ? 'Agent key rotated.' : 'Agent key generated.')
+    ctx.session.flash('success', rotated ? 'Daemon key rotated.' : 'Daemon key generated.')
     return ctx.response.redirect().toRoute('servers.settings', { id: server.id })
   }
 
@@ -34,26 +34,26 @@ export default class ServerAgentController {
   async unpair(ctx: HttpContext) {
     const server = await this.findServer(ctx)
 
-    server.agentKey = null
-    server.agentListenUrl = null
-    server.agentVersion = null
-    server.agentBootId = null
-    server.agentLastReportAt = null
+    server.daemonKey = null
+    server.daemonListenUrl = null
+    server.daemonVersion = null
+    server.daemonBootId = null
+    server.daemonLastReportAt = null
     await server.save()
 
-    ctx.session.flash('success', 'Agent unpaired.')
+    ctx.session.flash('success', 'Daemon unpaired.')
     return ctx.response.redirect().toRoute('servers.settings', { id: server.id })
   }
 
   /** Update the daemon's realtime URL (used by the live-view relay). */
   async update(ctx: HttpContext) {
     const server = await this.findServer(ctx)
-    const { agentListenUrl } = await ctx.request.validateUsing(agentSettingsValidator)
+    const { daemonListenUrl } = await ctx.request.validateUsing(daemonSettingsValidator)
 
-    server.agentListenUrl = agentListenUrl
+    server.daemonListenUrl = daemonListenUrl
     await server.save()
 
-    ctx.session.flash('success', 'Agent settings saved.')
+    ctx.session.flash('success', 'Daemon settings saved.')
     return ctx.response.redirect().toRoute('servers.settings', { id: server.id })
   }
 
@@ -77,7 +77,7 @@ export default class ServerAgentController {
     }
     write(': open\n\n')
 
-    const unsubscribe = agentStreamHub.subscribe(server, (frame) => {
+    const unsubscribe = daemonStreamHub.subscribe(server, (frame) => {
       write(`data: ${JSON.stringify(frame)}\n\n`)
     })
     const heartbeat = setInterval(() => write(': hb\n\n'), 25_000)

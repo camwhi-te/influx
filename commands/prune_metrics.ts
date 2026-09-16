@@ -2,7 +2,7 @@ import { BaseCommand, flags } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
 
 /**
- * Deletes agent reports older than the retention window. Run from cron:
+ * Deletes daemon reports older than the retention window. Run from cron:
  *
  *   node ace metrics:prune
  *
@@ -10,7 +10,7 @@ import type { CommandOptions } from '@adonisjs/core/types/ace'
  */
 export default class PruneMetrics extends BaseCommand {
   static commandName = 'metrics:prune'
-  static description = 'Delete stored agent reports older than the retention window'
+  static description = 'Delete stored daemon reports older than the retention window'
   static options: CommandOptions = { startApp: true }
 
   @flags.number({ description: 'Override the retention window in days' })

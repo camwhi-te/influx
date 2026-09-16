@@ -8,7 +8,7 @@ import {
   isMetricRange,
   type MetricRange,
 } from '#services/metrics_service'
-import { deriveAlerts } from '#services/agent_alerts'
+import { deriveAlerts } from '#services/daemon_alerts'
 import env from '#start/env'
 import type { HttpContext } from '@adonisjs/core/http'
 
@@ -185,7 +185,7 @@ export default class ServersController {
 
     return ctx.inertia.render('app/servers/settings', {
       server: ServerTransformer.transform(server),
-      agentKey: server.agentKey,
+      daemonKey: server.daemonKey,
       retentionDays: env.get('METRICS_RETENTION_DAYS', 30),
       reportCount: Number(reportCount?.$extras.total ?? 0),
     })

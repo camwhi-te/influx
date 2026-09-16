@@ -52,12 +52,12 @@ export default function ServerAnalytics({
         <RangeTabs value={range} options={ranges} only={['summary', 'range']} />
       </div>
 
-      {!server.agentPaired || summary.reportCount === 0 ? (
+      {!server.daemonPaired || summary.reportCount === 0 ? (
         <Card className="border-dashed">
           <CardContent className="text-muted-foreground py-12 text-center text-sm">
-            {server.agentPaired
+            {server.daemonPaired
               ? 'No reports in this range yet.'
-              : 'Pair a monitoring agent from the Settings tab to see analytics.'}
+              : 'Pair a monitoring daemon from the Settings tab to see analytics.'}
           </CardContent>
         </Card>
       ) : (

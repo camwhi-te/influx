@@ -19,16 +19,16 @@ export interface Registry {
       errorResponse: unknown
     }
   }
-  'agent.report': {
+  'daemon.report': {
     methods: ["POST"]
-    pattern: '/api/agent/report'
+    pattern: '/api/daemon/report'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/agent_report').agentReportValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#validators/daemon_report').daemonReportValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#validators/agent_report').agentReportValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/agent_reports_controller').default['store']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/agent_reports_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      query: ExtractQuery<InferInput<(typeof import('#validators/daemon_report').daemonReportValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/daemon_reports_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/daemon_reports_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'new_account.create': {
@@ -255,44 +255,44 @@ export interface Registry {
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/server_agent_controller').default['stream']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/server_agent_controller').default['stream']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/server_daemon_controller').default['stream']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/server_daemon_controller').default['stream']>>>
     }
   }
-  'servers.agent.key': {
+  'servers.daemon.key': {
     methods: ["POST"]
-    pattern: '/app/servers/:id/agent/key'
+    pattern: '/app/servers/:id/daemon/key'
     types: {
       body: {}
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/server_agent_controller').default['generateKey']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/server_agent_controller').default['generateKey']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/server_daemon_controller').default['generateKey']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/server_daemon_controller').default['generateKey']>>>
     }
   }
-  'servers.agent.unpair': {
+  'servers.daemon.unpair': {
     methods: ["DELETE"]
-    pattern: '/app/servers/:id/agent/key'
+    pattern: '/app/servers/:id/daemon/key'
     types: {
       body: {}
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
       query: {}
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/server_agent_controller').default['unpair']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/server_agent_controller').default['unpair']>>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/server_daemon_controller').default['unpair']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/server_daemon_controller').default['unpair']>>>
     }
   }
-  'servers.agent.update': {
+  'servers.daemon.update': {
     methods: ["PUT"]
-    pattern: '/app/servers/:id/agent'
+    pattern: '/app/servers/:id/daemon'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#validators/server').agentSettingsValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#validators/server').daemonSettingsValidator)>>
       paramsTuple: [ParamValue]
       params: { id: ParamValue }
-      query: ExtractQuery<InferInput<(typeof import('#validators/server').agentSettingsValidator)>>
-      response: ExtractResponse<Awaited<ReturnType<import('#controllers/server_agent_controller').default['update']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/server_agent_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      query: ExtractQuery<InferInput<(typeof import('#validators/server').daemonSettingsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/server_daemon_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/server_daemon_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'dashboard.account': {

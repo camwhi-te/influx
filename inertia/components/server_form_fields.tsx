@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 export const SERVER_TYPES = ['http', 'ssh', 'game', 'dedicated', 'database', 'other']
 export const SERVER_SEVERITIES = ['low', 'medium', 'high']
 
-export type AgentState = 'unpaired' | 'online' | 'stale' | 'offline'
+export type DaemonState = 'unpaired' | 'online' | 'stale' | 'offline'
 
 export type ServerRecord = {
   id: number
@@ -15,11 +15,11 @@ export type ServerRecord = {
   location: string
   type: string
   severity: string
-  agentPaired: boolean
-  agentState: AgentState
-  agentListenUrl: string | null
-  agentVersion: string | null
-  agentLastReportAt: string | null
+  daemonPaired: boolean
+  daemonState: DaemonState
+  daemonListenUrl: string | null
+  daemonVersion: string | null
+  daemonLastReportAt: string | null
 }
 
 /** Native select styled to match the shared Input component. */

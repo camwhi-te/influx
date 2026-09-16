@@ -4,26 +4,26 @@ import ServerLayout from '@/layouts/server_layout'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { ServerFormFields, type ServerRecord } from '@/components/server_form_fields'
-import { AgentCard } from '@/components/metrics/agent_card'
+import { DaemonCard } from '@/components/metrics/daemon_card'
 import { cn } from '@/lib/utils'
 
 export default function ServerSettings({
   server,
-  agentKey,
+  daemonKey,
   retentionDays,
   reportCount,
 }: {
   server: ServerRecord
-  agentKey: string | null
+  daemonKey: string | null
   retentionDays: number
   reportCount: number
 }) {
   return (
     <ServerLayout server={server}>
       <div className="grid max-w-2xl gap-6">
-        <AgentCard
+        <DaemonCard
           server={server}
-          agentKey={agentKey}
+          daemonKey={daemonKey}
           retentionDays={retentionDays}
           reportCount={reportCount}
         />

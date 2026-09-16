@@ -82,12 +82,12 @@ export class ServerReportSchema extends BaseModel {
 export class ServerSchema extends BaseModel {
   static $columns = [
     'address',
-    'agentBootId',
-    'agentKey',
-    'agentLastReportAt',
-    'agentListenUrl',
-    'agentVersion',
     'createdAt',
+    'daemonBootId',
+    'daemonKey',
+    'daemonLastReportAt',
+    'daemonListenUrl',
+    'daemonVersion',
     'id',
     'location',
     'name',
@@ -99,18 +99,18 @@ export class ServerSchema extends BaseModel {
   $columns = ServerSchema.$columns
   @column()
   declare address: string
-  @column()
-  declare agentBootId: string | null
-  @column()
-  declare agentKey: string | null
-  @column.dateTime()
-  declare agentLastReportAt: DateTime | null
-  @column()
-  declare agentListenUrl: string | null
-  @column()
-  declare agentVersion: string | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
+  @column()
+  declare daemonBootId: string | null
+  @column()
+  declare daemonKey: string | null
+  @column.dateTime()
+  declare daemonLastReportAt: DateTime | null
+  @column()
+  declare daemonListenUrl: string | null
+  @column()
+  declare daemonVersion: string | null
   @column({ isPrimary: true })
   declare id: number
   @column()

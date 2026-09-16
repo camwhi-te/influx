@@ -3,7 +3,7 @@ import ServerLayout from '@/layouts/server_layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ConnectionBadge } from '@/components/metrics/connection_badge'
 import { type ServerRecord } from '@/components/server_form_fields'
-import { type LatestReport, type AgentSnapshot } from '@/lib/agent'
+import { type LatestReport, type DaemonSnapshot } from '@/lib/daemon'
 import { fmtBytes, fmtBytesPerSec, fmtPct, fmtRelative, fmtTemp, fmtNumber } from '@/lib/metrics'
 import { cn } from '@/lib/utils'
 
@@ -63,8 +63,8 @@ export default function ServerConsole({
   server: ServerRecord
   latest: LatestReport
 }) {
-  const stream = useServerStream(server.id, server.agentPaired)
-  const snap: AgentSnapshot | undefined = stream.snapshot ?? latest?.report.snapshot
+  const stream = useServerStream(server.id, server.daemonPaired)
+  const snap: DaemonSnapshot | undefined = stream.snapshot ?? latest?.report.snapshot
   const live = Boolean(stream.snapshot)
 
   return (
@@ -83,7 +83,7 @@ export default function ServerConsole({
       {stream.connection === 'unconfigured' && (
         <Card className="mb-4 border-dashed">
           <CardContent className="text-muted-foreground py-4 text-sm">
-            No agent URL set — showing stored reports only. Add the daemon&apos;s realtime URL on
+            No daemon URL set — showing stored reports only. Add the daemon&apos;s realtime URL on
             the Settings tab for a live view.
           </CardContent>
         </Card>
@@ -92,7 +92,7 @@ export default function ServerConsole({
       {!snap ? (
         <Card className="border-dashed">
           <CardContent className="text-muted-foreground py-12 text-center text-sm">
-            Waiting for the agent to report.
+            Waiting for the daemon to report.
           </CardContent>
         </Card>
       ) : (

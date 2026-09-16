@@ -24,10 +24,10 @@ export default function ServerAlerts({
         {capturedAt ? ` · ${fmtRelative(capturedAt)}` : ''}. A full rule engine comes later.
       </p>
 
-      {!server.agentPaired ? (
+      {!server.daemonPaired ? (
         <Card className="border-dashed">
           <CardContent className="text-muted-foreground py-12 text-center text-sm">
-            Pair a monitoring agent from the Settings tab to evaluate alerts.
+            Pair a monitoring daemon from the Settings tab to evaluate alerts.
           </CardContent>
         </Card>
       ) : alerts.length === 0 ? (

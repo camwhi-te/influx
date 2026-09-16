@@ -4,10 +4,10 @@ import { type ServerRecord } from '@/components/server_form_fields'
 import { fmtClock, fmtRelative } from '@/lib/metrics'
 import { cn } from '@/lib/utils'
 
-type AgentEvent = { at: string; kind: string; detail: string; capturedAt: string }
+type DaemonEvent = { at: string; kind: string; detail: string; capturedAt: string }
 
 const KIND_STYLE: Record<string, string> = {
-  agent_start: 'bg-primary/15 text-primary',
+  daemon_start: 'bg-primary/15 text-primary',
   oom: 'bg-destructive/15 text-destructive',
   temp_crit: 'bg-destructive/15 text-destructive',
   disk_full: 'bg-destructive/15 text-destructive',
@@ -19,7 +19,7 @@ export default function ServerEvents({
   events,
 }: {
   server: ServerRecord
-  events: AgentEvent[]
+  events: DaemonEvent[]
 }) {
   return (
     <ServerLayout server={server}>
@@ -30,9 +30,9 @@ export default function ServerEvents({
       {events.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="text-muted-foreground py-12 text-center text-sm">
-            {server.agentPaired
+            {server.daemonPaired
               ? 'No events reported yet.'
-              : 'Pair a monitoring agent from the Settings tab.'}
+              : 'Pair a monitoring daemon from the Settings tab.'}
           </CardContent>
         </Card>
       ) : (

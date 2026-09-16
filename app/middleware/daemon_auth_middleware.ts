@@ -4,17 +4,17 @@ import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 
 /**
- * Authenticates a monitoring daemon on the `/api/agent/*` routes.
+ * Authenticates a monitoring daemon on the `/api/daemon/*` routes.
  *
- * - `Authorization: Bearer <agent_key>` selects the server and is checked in
+ * - `Authorization: Bearer <daemon_key>` selects the server and is checked in
  *   constant time.
  * - `X-Signature: sha256=<hex>` must equal HMAC-SHA256 of the raw request body
- *   keyed by the same `agent_key` (see AGENT.md).
+ *   keyed by the same `daemon_key` (see PROTOCOL.md).
  *
- * On success the resolved server is attached as `ctx.agentServer` and the raw
- * body string as `ctx.agentRawBody`.
+ * On success the resolved server is attached as `ctx.daemonServer` and the raw
+ * body string as `ctx.daemonRawBody`.
  */
-export default class AgentAuthMiddleware {
+export default class DaemonAuthMiddleware {
   async handle(ctx: HttpContext, next: NextFn) {
     const { request, response } = ctx
 
@@ -24,20 +24,20 @@ export default class AgentAuthMiddleware {
       return response.unauthorized({ error: 'Missing bearer token' })
     }
 
-    const server = await Server.findBy('agentKey', presented)
-    if (!server || !server.agentKey || !safeEqual(server.agentKey, presented)) {
-      return response.unauthorized({ error: 'Invalid agent key' })
+    const server = await Server.findBy('daemonKey', presented)
+    if (!server || !server.daemonKey || !safeEqual(server.daemonKey, presented)) {
+      return response.unauthorized({ error: 'Invalid daemon key' })
     }
 
     const raw = request.raw() ?? ''
     const signature = (request.header('x-signature') ?? '').replace(/^sha256=/i, '')
-    const expected = createHmac('sha256', server.agentKey).update(raw).digest('hex')
+    const expected = createHmac('sha256', server.daemonKey).update(raw).digest('hex')
     if (!signature || !safeEqual(signature, expected)) {
       return response.unauthorized({ error: 'Bad signature' })
     }
 
-    ctx.agentServer = server
-    ctx.agentRawBody = raw
+    ctx.daemonServer = server
+    ctx.daemonRawBody = raw
 
     return next()
   }
@@ -57,7 +57,7 @@ function safeEqual(a: string, b: string): boolean {
 
 declare module '@adonisjs/core/http' {
   export interface HttpContext {
-    agentServer?: Server
-    agentRawBody?: string
+    daemonServer?: Server
+    daemonRawBody?: string
   }
 }

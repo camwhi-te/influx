@@ -1,28 +1,28 @@
 import ServerReport from '#models/server_report'
-import { agentReportValidator } from '#validators/agent_report'
-import { promoteMetrics, AGENT_SCHEMA_VERSION, type AgentReport } from '#services/agent_protocol'
-import { agentStreamHub } from '#services/agent_stream_hub'
+import { daemonReportValidator } from '#validators/daemon_report'
+import { promoteMetrics, DAEMON_SCHEMA_VERSION, type DaemonReport } from '#services/daemon_protocol'
+import { daemonStreamHub } from '#services/daemon_stream_hub'
 import { DateTime } from 'luxon'
 import logger from '@adonisjs/core/services/logger'
 import type { HttpContext } from '@adonisjs/core/http'
 
-export default class AgentReportsController {
+export default class DaemonReportsController {
   /**
-   * POST /api/agent/report — ingest one historical report from a daemon.
-   * Authenticated by `AgentAuthMiddleware`. Idempotent on (boot_id, report_seq).
+   * POST /api/daemon/report — ingest one historical report from a daemon.
+   * Authenticated by `DaemonAuthMiddleware`. Idempotent on (boot_id, report_seq).
    */
   async store(ctx: HttpContext) {
-    const server = ctx.agentServer!
-    const payload = await ctx.request.validateUsing(agentReportValidator)
+    const server = ctx.daemonServer!
+    const payload = await ctx.request.validateUsing(daemonReportValidator)
 
-    if (payload.schema_version !== AGENT_SCHEMA_VERSION) {
+    if (payload.schema_version !== DAEMON_SCHEMA_VERSION) {
       logger.warn(
         { serverId: server.id, got: payload.schema_version },
-        'agent report schema version mismatch'
+        'daemon report schema version mismatch'
       )
     }
 
-    const report = payload as unknown as AgentReport
+    const report = payload as unknown as DaemonReport
     const metrics = promoteMetrics(report)
     const capturedAt = DateTime.fromISO(metrics.capturedAt)
     const captured = capturedAt.isValid ? capturedAt : DateTime.now()
@@ -59,15 +59,15 @@ export default class AgentReportsController {
     }
 
     // Advance the server's "last seen" pointer only for a newer sample.
-    if (!server.agentLastReportAt || captured > server.agentLastReportAt) {
-      server.agentLastReportAt = captured
-      server.agentBootId = report.boot_id
-      if (report.agent_version) server.agentVersion = report.agent_version
+    if (!server.daemonLastReportAt || captured > server.daemonLastReportAt) {
+      server.daemonLastReportAt = captured
+      server.daemonBootId = report.boot_id
+      if (report.daemon_version) server.daemonVersion = report.daemon_version
       await server.save()
     }
 
     // Feed anyone watching the live view, even when the WS relay is unavailable.
-    agentStreamHub.publishSnapshot(server.id, { ...report.snapshot, type: 'snapshot' })
+    daemonStreamHub.publishSnapshot(server.id, { ...report.snapshot, type: 'snapshot' })
 
     return ctx.response.accepted({ ok: true, duplicate: Boolean(existing) })
   }

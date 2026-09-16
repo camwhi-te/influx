@@ -16,14 +16,14 @@ export type ServerType = (typeof SERVER_TYPES)[number]
 export type ServerSeverity = (typeof SERVER_SEVERITIES)[number]
 
 /** A server counts as "online" if it reported within this window. */
-export const AGENT_ONLINE_WINDOW_SECONDS = 120
+export const DAEMON_ONLINE_WINDOW_SECONDS = 120
 
-export type AgentConnectionState = 'unpaired' | 'online' | 'stale' | 'offline'
+export type DaemonConnectionState = 'unpaired' | 'online' | 'stale' | 'offline'
 
 export default class Server extends ServerSchema {
   /** Never expose the bearer token through generic serialization. */
   @column({ serializeAs: null })
-  declare agentKey: string | null
+  declare daemonKey: string | null
 
   @belongsTo(() => User)
   declare user: BelongsTo<typeof User>
@@ -31,16 +31,16 @@ export default class Server extends ServerSchema {
   @hasMany(() => ServerReport)
   declare reports: HasMany<typeof ServerReport>
 
-  get agentPaired(): boolean {
-    return this.agentKey !== null
+  get daemonPaired(): boolean {
+    return this.daemonKey !== null
   }
 
-  get agentState(): AgentConnectionState {
-    if (!this.agentKey) return 'unpaired'
-    if (!this.agentLastReportAt) return 'offline'
-    const age = DateTime.now().diff(this.agentLastReportAt, 'seconds').seconds
-    if (age <= AGENT_ONLINE_WINDOW_SECONDS) return 'online'
-    if (age <= AGENT_ONLINE_WINDOW_SECONDS * 5) return 'stale'
+  get daemonState(): DaemonConnectionState {
+    if (!this.daemonKey) return 'unpaired'
+    if (!this.daemonLastReportAt) return 'offline'
+    const age = DateTime.now().diff(this.daemonLastReportAt, 'seconds').seconds
+    if (age <= DAEMON_ONLINE_WINDOW_SECONDS) return 'online'
+    if (age <= DAEMON_ONLINE_WINDOW_SECONDS * 5) return 'stale'
     return 'offline'
   }
 }

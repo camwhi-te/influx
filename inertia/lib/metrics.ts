@@ -128,7 +128,7 @@ export function axisTimeLabel(iso: string, range: MetricRange): string {
   return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
 }
 
-export const AGENT_STATE_META: Record<string, { label: string; dot: string; text: string }> = {
+export const DAEMON_STATE_META: Record<string, { label: string; dot: string; text: string }> = {
   online: {
     label: 'Online',
     dot: 'bg-emerald-500',

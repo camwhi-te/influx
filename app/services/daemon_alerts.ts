@@ -1,5 +1,5 @@
 import type Server from '#models/server'
-import type { AgentReport } from '#services/agent_protocol'
+import type { DaemonReport } from '#services/daemon_protocol'
 
 export type AlertLevel = 'warning' | 'critical'
 
@@ -14,21 +14,21 @@ export interface DerivedAlert {
  * rules engine — it just surfaces the obvious "something is wrong right now"
  * signals until real alerting lands.
  */
-export function deriveAlerts(server: Server, report: AgentReport | null): DerivedAlert[] {
+export function deriveAlerts(server: Server, report: DaemonReport | null): DerivedAlert[] {
   const alerts: DerivedAlert[] = []
 
-  if (server.agentState === 'offline' && server.agentPaired) {
+  if (server.daemonState === 'offline' && server.daemonPaired) {
     alerts.push({
       level: 'critical',
-      title: 'Agent offline',
-      detail: server.agentLastReportAt
-        ? `No report since ${server.agentLastReportAt.toISO()}`
+      title: 'Daemon offline',
+      detail: server.daemonLastReportAt
+        ? `No report since ${server.daemonLastReportAt.toISO()}`
         : 'The daemon has never reported in.',
     })
-  } else if (server.agentState === 'stale') {
+  } else if (server.daemonState === 'stale') {
     alerts.push({
       level: 'warning',
-      title: 'Agent reporting late',
+      title: 'Daemon reporting late',
       detail: 'Reports are arriving slower than expected.',
     })
   }

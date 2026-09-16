@@ -3,8 +3,8 @@ import type { routes } from './index.ts'
 
 export interface ApiDefinition {
   home: typeof routes['home']
-  agent: {
-    report: typeof routes['agent.report']
+  daemon: {
+    report: typeof routes['daemon.report']
   }
   newAccount: {
     create: typeof routes['new_account.create']
@@ -33,10 +33,10 @@ export interface ApiDefinition {
     actions: typeof routes['servers.actions']
     settings: typeof routes['servers.settings']
     stream: typeof routes['servers.stream']
-    agent: {
-      key: typeof routes['servers.agent.key']
-      unpair: typeof routes['servers.agent.unpair']
-      update: typeof routes['servers.agent.update']
+    daemon: {
+      key: typeof routes['servers.daemon.key']
+      unpair: typeof routes['servers.daemon.unpair']
+      update: typeof routes['servers.daemon.update']
     }
   }
 }

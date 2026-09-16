@@ -17,12 +17,12 @@ export const createServerValidator = vine.create(fields)
 export const updateServerValidator = vine.create(fields)
 
 /**
- * Agent connection settings, edited from the server Settings tab. An empty
+ * Daemon connection settings, edited from the server Settings tab. An empty
  * string clears the URL (unsets it).
  */
-export const agentSettingsValidator = vine.create(
+export const daemonSettingsValidator = vine.create(
   vine.object({
-    agentListenUrl: vine
+    daemonListenUrl: vine
       .string()
       .trim()
       .url({ require_tld: false, protocols: ['http', 'https'] })

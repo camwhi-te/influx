@@ -10,7 +10,7 @@ import { Stat } from '@/components/metrics/stat'
 import { MetricChart } from '@/components/charts/metric_chart'
 import { type ServerRecord } from '@/components/server_form_fields'
 import {
-  AGENT_STATE_META,
+  DAEMON_STATE_META,
   fmtBytesPerSec,
   fmtDuration,
   fmtPct,
@@ -19,7 +19,7 @@ import {
   fmtNumber,
   type MetricPoint,
 } from '@/lib/metrics'
-import { type LatestReport } from '@/lib/agent'
+import { type LatestReport } from '@/lib/daemon'
 import { cn } from '@/lib/utils'
 
 function col(series: MetricPoint[], key: keyof MetricPoint): (number | null)[] {
@@ -36,16 +36,16 @@ export default function ServerOverview({
   series: MetricPoint[]
 }) {
   useEffect(() => {
-    if (!server.agentPaired) return
+    if (!server.daemonPaired) return
     const id = setInterval(() => router.reload({ only: ['latest', 'series', 'server'] }), 15_000)
     return () => clearInterval(id)
-  }, [server.agentPaired])
+  }, [server.daemonPaired])
 
   const snap = latest?.report.snapshot
   const host = snap?.host
-  const stateMeta = AGENT_STATE_META[server.agentState] ?? AGENT_STATE_META.unpaired
+  const stateMeta = DAEMON_STATE_META[server.daemonState] ?? DAEMON_STATE_META.unpaired
 
-  if (!server.agentPaired) {
+  if (!server.daemonPaired) {
     return (
       <ServerLayout server={server}>
         <Card className="border-dashed">
@@ -54,9 +54,9 @@ export default function ServerOverview({
               <ServerIcon className="size-5" />
             </div>
             <div className="space-y-1">
-              <p className="font-medium">No monitoring agent yet</p>
+              <p className="font-medium">No monitoring daemon yet</p>
               <p className="text-muted-foreground mx-auto max-w-md text-sm">
-                Pair the influx-agent daemon with {server.name} to start collecting metrics.
+                Pair the influxd daemon with {server.name} to start collecting metrics.
               </p>
             </div>
             <Link
@@ -64,7 +64,7 @@ export default function ServerOverview({
               routeParams={{ id: server.id }}
               className={cn(buttonVariants({ size: 'sm' }))}
             >
-              Set up the agent
+              Set up the daemon
             </Link>
           </CardContent>
         </Card>
@@ -83,7 +83,7 @@ export default function ServerOverview({
               {stateMeta.label}
             </p>
             <p className="text-muted-foreground text-xs">
-              Last report {fmtRelative(server.agentLastReportAt)}
+              Last report {fmtRelative(server.daemonLastReportAt)}
             </p>
           </div>
           <div>
@@ -103,8 +103,8 @@ export default function ServerOverview({
             </p>
           </div>
           <div>
-            <p className="text-muted-foreground text-xs uppercase">Agent</p>
-            <p className="font-medium">v{server.agentVersion ?? '—'}</p>
+            <p className="text-muted-foreground text-xs uppercase">Daemon</p>
+            <p className="font-medium">v{server.daemonVersion ?? '—'}</p>
             <p className="text-muted-foreground text-xs">Up {fmtDuration(host?.uptime_seconds)}</p>
           </div>
         </CardContent>
@@ -113,7 +113,7 @@ export default function ServerOverview({
       {!snap ? (
         <Card className="border-dashed">
           <CardContent className="text-muted-foreground py-12 text-center text-sm">
-            Agent paired — waiting for the first report.
+            Daemon paired — waiting for the first report.
           </CardContent>
         </Card>
       ) : (

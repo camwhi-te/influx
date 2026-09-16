@@ -12,11 +12,11 @@ const routes = {
     tokens: [{"old":"/","type":0,"val":"/","end":""}],
     types: placeholder as Registry['home']['types'],
   },
-  'agent.report': {
+  'daemon.report': {
     methods: ["POST"],
-    pattern: '/api/agent/report',
-    tokens: [{"old":"/api/agent/report","type":0,"val":"api","end":""},{"old":"/api/agent/report","type":0,"val":"agent","end":""},{"old":"/api/agent/report","type":0,"val":"report","end":""}],
-    types: placeholder as Registry['agent.report']['types'],
+    pattern: '/api/daemon/report',
+    tokens: [{"old":"/api/daemon/report","type":0,"val":"api","end":""},{"old":"/api/daemon/report","type":0,"val":"daemon","end":""},{"old":"/api/daemon/report","type":0,"val":"report","end":""}],
+    types: placeholder as Registry['daemon.report']['types'],
   },
   'new_account.create': {
     methods: ["GET","HEAD"],
@@ -132,23 +132,23 @@ const routes = {
     tokens: [{"old":"/app/servers/:id/stream","type":0,"val":"app","end":""},{"old":"/app/servers/:id/stream","type":0,"val":"servers","end":""},{"old":"/app/servers/:id/stream","type":1,"val":"id","end":""},{"old":"/app/servers/:id/stream","type":0,"val":"stream","end":""}],
     types: placeholder as Registry['servers.stream']['types'],
   },
-  'servers.agent.key': {
+  'servers.daemon.key': {
     methods: ["POST"],
-    pattern: '/app/servers/:id/agent/key',
-    tokens: [{"old":"/app/servers/:id/agent/key","type":0,"val":"app","end":""},{"old":"/app/servers/:id/agent/key","type":0,"val":"servers","end":""},{"old":"/app/servers/:id/agent/key","type":1,"val":"id","end":""},{"old":"/app/servers/:id/agent/key","type":0,"val":"agent","end":""},{"old":"/app/servers/:id/agent/key","type":0,"val":"key","end":""}],
-    types: placeholder as Registry['servers.agent.key']['types'],
+    pattern: '/app/servers/:id/daemon/key',
+    tokens: [{"old":"/app/servers/:id/daemon/key","type":0,"val":"app","end":""},{"old":"/app/servers/:id/daemon/key","type":0,"val":"servers","end":""},{"old":"/app/servers/:id/daemon/key","type":1,"val":"id","end":""},{"old":"/app/servers/:id/daemon/key","type":0,"val":"daemon","end":""},{"old":"/app/servers/:id/daemon/key","type":0,"val":"key","end":""}],
+    types: placeholder as Registry['servers.daemon.key']['types'],
   },
-  'servers.agent.unpair': {
+  'servers.daemon.unpair': {
     methods: ["DELETE"],
-    pattern: '/app/servers/:id/agent/key',
-    tokens: [{"old":"/app/servers/:id/agent/key","type":0,"val":"app","end":""},{"old":"/app/servers/:id/agent/key","type":0,"val":"servers","end":""},{"old":"/app/servers/:id/agent/key","type":1,"val":"id","end":""},{"old":"/app/servers/:id/agent/key","type":0,"val":"agent","end":""},{"old":"/app/servers/:id/agent/key","type":0,"val":"key","end":""}],
-    types: placeholder as Registry['servers.agent.unpair']['types'],
+    pattern: '/app/servers/:id/daemon/key',
+    tokens: [{"old":"/app/servers/:id/daemon/key","type":0,"val":"app","end":""},{"old":"/app/servers/:id/daemon/key","type":0,"val":"servers","end":""},{"old":"/app/servers/:id/daemon/key","type":1,"val":"id","end":""},{"old":"/app/servers/:id/daemon/key","type":0,"val":"daemon","end":""},{"old":"/app/servers/:id/daemon/key","type":0,"val":"key","end":""}],
+    types: placeholder as Registry['servers.daemon.unpair']['types'],
   },
-  'servers.agent.update': {
+  'servers.daemon.update': {
     methods: ["PUT"],
-    pattern: '/app/servers/:id/agent',
-    tokens: [{"old":"/app/servers/:id/agent","type":0,"val":"app","end":""},{"old":"/app/servers/:id/agent","type":0,"val":"servers","end":""},{"old":"/app/servers/:id/agent","type":1,"val":"id","end":""},{"old":"/app/servers/:id/agent","type":0,"val":"agent","end":""}],
-    types: placeholder as Registry['servers.agent.update']['types'],
+    pattern: '/app/servers/:id/daemon',
+    tokens: [{"old":"/app/servers/:id/daemon","type":0,"val":"app","end":""},{"old":"/app/servers/:id/daemon","type":0,"val":"servers","end":""},{"old":"/app/servers/:id/daemon","type":1,"val":"id","end":""},{"old":"/app/servers/:id/daemon","type":0,"val":"daemon","end":""}],
+    types: placeholder as Registry['servers.daemon.update']['types'],
   },
   'dashboard.account': {
     methods: ["GET","HEAD"],

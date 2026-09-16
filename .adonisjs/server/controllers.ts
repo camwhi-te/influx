@@ -4,10 +4,10 @@
  */
 
 export const controllers = {
-  AgentReports: () => import('#controllers/agent_reports_controller'),
+  DaemonReports: () => import('#controllers/daemon_reports_controller'),
   Dashboard: () => import('#controllers/dashboard_controller'),
   NewAccount: () => import('#controllers/new_account_controller'),
-  ServerAgent: () => import('#controllers/server_agent_controller'),
+  ServerDaemon: () => import('#controllers/server_daemon_controller'),
   Servers: () => import('#controllers/servers_controller'),
   Session: () => import('#controllers/session_controller'),
 }

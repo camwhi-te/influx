@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { AGENT_STATE_META, fmtRelative } from '@/lib/metrics'
+import { DAEMON_STATE_META, fmtRelative } from '@/lib/metrics'
 import { type ServerRecord } from '@/components/server_form_fields'
 import { cn } from '@/lib/utils'
 
@@ -33,25 +33,25 @@ function CopyButton({ text, label = 'Copy' }: { text: string; label?: string }) 
   )
 }
 
-export function AgentCard({
+export function DaemonCard({
   server,
-  agentKey,
+  daemonKey,
   retentionDays,
   reportCount,
 }: {
   server: ServerRecord
-  agentKey: string | null
+  daemonKey: string | null
   retentionDays: number
   reportCount: number
 }) {
   const [revealed, setRevealed] = useState(false)
-  const stateMeta = AGENT_STATE_META[server.agentState] ?? AGENT_STATE_META.unpaired
+  const stateMeta = DAEMON_STATE_META[server.daemonState] ?? DAEMON_STATE_META.unpaired
   const origin = typeof window !== 'undefined' ? window.location.origin : ''
 
   const configSnippet = [
-    '# /etc/influx-agent/config.toml',
+    '# /etc/influxd/config.toml',
     `panel_url = "${origin}"`,
-    `agent_key = "${agentKey ?? '<generate a key first>'}"`,
+    `daemon_key = "${daemonKey ?? '<generate a key first>'}"`,
     'listen = "0.0.0.0:9843"',
     'sample_interval = "2s"',
     'report_interval = "30s"',
@@ -60,9 +60,9 @@ export function AgentCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Monitoring agent</CardTitle>
+        <CardTitle>Monitoring daemon</CardTitle>
         <CardDescription>
-          Pair the influx-agent daemon with {server.name} to collect metrics.
+          Pair the influxd daemon with {server.name} to collect metrics.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -72,33 +72,33 @@ export function AgentCard({
             {stateMeta.label}
           </span>
           <span className="text-muted-foreground">
-            Last report {fmtRelative(server.agentLastReportAt)}
+            Last report {fmtRelative(server.daemonLastReportAt)}
           </span>
-          {server.agentVersion && (
-            <span className="text-muted-foreground">Agent v{server.agentVersion}</span>
+          {server.daemonVersion && (
+            <span className="text-muted-foreground">Daemon v{server.daemonVersion}</span>
           )}
           <span className="text-muted-foreground">
             {reportCount.toLocaleString()} reports stored · {retentionDays}-day retention
           </span>
         </div>
 
-        {!agentKey ? (
-          <Form route="servers.agent.key" routeParams={{ id: server.id }}>
+        {!daemonKey ? (
+          <Form route="servers.daemon.key" routeParams={{ id: server.id }}>
             {({ processing }) => (
               <Button type="submit" disabled={processing}>
-                Generate agent key
+                Generate daemon key
               </Button>
             )}
           </Form>
         ) : (
           <>
             <div className="space-y-2">
-              <Label htmlFor="agent-key">Agent key</Label>
+              <Label htmlFor="daemon-key">Daemon key</Label>
               <div className="flex flex-wrap items-center gap-2">
                 <Input
-                  id="agent-key"
+                  id="daemon-key"
                   readOnly
-                  value={revealed ? agentKey : '•'.repeat(24)}
+                  value={revealed ? daemonKey : '•'.repeat(24)}
                   className="max-w-xs font-mono"
                   onFocus={(e) => e.target.select()}
                 />
@@ -111,7 +111,7 @@ export function AgentCard({
                   {revealed ? <EyeOffIcon /> : <EyeIcon />}
                   {revealed ? 'Hide' : 'Reveal'}
                 </Button>
-                <CopyButton text={agentKey} label="Copy key" />
+                <CopyButton text={daemonKey} label="Copy key" />
               </div>
               <p className="text-muted-foreground text-xs">
                 Treat this like a password — it authenticates the daemon&apos;s reports and live
@@ -120,18 +120,18 @@ export function AgentCard({
             </div>
 
             <Form
-              route="servers.agent.update"
+              route="servers.daemon.update"
               routeParams={{ id: server.id }}
               className="space-y-2"
             >
               {({ errors, processing }) => (
                 <>
-                  <Label htmlFor="agentListenUrl">Realtime URL (for the live view)</Label>
+                  <Label htmlFor="daemonListenUrl">Realtime URL (for the live view)</Label>
                   <div className="flex flex-wrap items-center gap-2">
                     <Input
-                      id="agentListenUrl"
-                      name="agentListenUrl"
-                      defaultValue={server.agentListenUrl ?? ''}
+                      id="daemonListenUrl"
+                      name="daemonListenUrl"
+                      defaultValue={server.daemonListenUrl ?? ''}
                       placeholder="http://10.0.0.4:9843"
                       className="max-w-xs"
                     />
@@ -139,8 +139,8 @@ export function AgentCard({
                       Save
                     </Button>
                   </div>
-                  {errors.agentListenUrl && (
-                    <p className="text-destructive text-xs">{errors.agentListenUrl}</p>
+                  {errors.daemonListenUrl && (
+                    <p className="text-destructive text-xs">{errors.daemonListenUrl}</p>
                   )}
                   <p className="text-muted-foreground text-xs">
                     Where the Panel can reach the daemon&apos;s HTTP server. Leave blank if the
@@ -157,20 +157,20 @@ export function AgentCard({
               </div>
               <pre className="bg-muted overflow-x-auto rounded-md p-3 text-xs">{configSnippet}</pre>
               <p className="text-muted-foreground text-xs">
-                Then run <code className="font-mono">influx-agent run</code>. See{' '}
-                <code className="font-mono">AGENT.md</code> for the full protocol.
+                Then run <code className="font-mono">influxd run</code>. See{' '}
+                <code className="font-mono">PROTOCOL.md</code> for the full protocol.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2 border-t pt-4">
-              <Form route="servers.agent.key" routeParams={{ id: server.id }}>
+              <Form route="servers.daemon.key" routeParams={{ id: server.id }}>
                 {({ processing }) => (
                   <Button type="submit" variant="outline" size="sm" disabled={processing}>
                     Rotate key
                   </Button>
                 )}
               </Form>
-              <Form route="servers.agent.unpair" routeParams={{ id: server.id }}>
+              <Form route="servers.daemon.unpair" routeParams={{ id: server.id }}>
                 {({ processing }) => (
                   <Button type="submit" variant="ghost" size="sm" disabled={processing}>
                     Unpair

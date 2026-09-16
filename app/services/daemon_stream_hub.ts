@@ -1,7 +1,7 @@
 import { WebSocket } from 'ws'
 import logger from '@adonisjs/core/services/logger'
 import type Server from '#models/server'
-import type { AgentSnapshot } from '#services/agent_protocol'
+import type { DaemonSnapshot } from '#services/daemon_protocol'
 
 export type StreamFrame =
   | { type: 'hello'; [k: string]: unknown }
@@ -34,13 +34,13 @@ interface Entry {
 }
 
 /**
- * Bridges each server's daemon WebSocket (`{agent_listen_url}/v1/stream`) to the
+ * Bridges each server's daemon WebSocket (`{daemon_listen_url}/v1/stream`) to the
  * browser. One upstream connection per server is shared by every viewer (SSE
  * listener); it is opened lazily on the first viewer and closed a while after
  * the last one leaves. `publishSnapshot` also lets the ingest path push frames
  * when the daemon is not directly reachable.
  */
-class AgentStreamHub {
+class DaemonStreamHub {
   private entries = new Map<number, Entry>()
 
   subscribe(server: Server, listener: Listener): () => void {
@@ -71,7 +71,7 @@ class AgentStreamHub {
   }
 
   /** Push a snapshot from outside the WS path (e.g. a freshly ingested report). */
-  publishSnapshot(serverId: number, snapshot: AgentSnapshot & { type?: string }) {
+  publishSnapshot(serverId: number, snapshot: DaemonSnapshot & { type?: string }) {
     const entry = this.entries.get(serverId)
     if (!entry) return
     const frame = { ...snapshot, type: 'snapshot' } as StreamFrame
@@ -84,8 +84,8 @@ class AgentStreamHub {
     if (!entry) {
       entry = {
         serverId: server.id,
-        listenUrl: server.agentListenUrl,
-        token: server.agentKey,
+        listenUrl: server.daemonListenUrl,
+        token: server.daemonKey,
         listeners: new Set(),
         state: 'idle',
         reconnectAttempts: 0,
@@ -93,8 +93,8 @@ class AgentStreamHub {
       this.entries.set(server.id, entry)
     } else {
       // Pick up rotated keys / changed URLs between viewings.
-      entry.listenUrl = server.agentListenUrl
-      entry.token = server.agentKey
+      entry.listenUrl = server.daemonListenUrl
+      entry.token = server.daemonKey
     }
     return entry
   }
@@ -111,7 +111,7 @@ class AgentStreamHub {
       url = toStreamUrl(entry.listenUrl)
     } catch {
       entry.state = 'unconfigured'
-      this.fanOut(entry, { type: 'status', state: 'unconfigured', detail: 'Invalid agent URL' })
+      this.fanOut(entry, { type: 'status', state: 'unconfigured', detail: 'Invalid daemon URL' })
       return
     }
 
@@ -161,7 +161,7 @@ class AgentStreamHub {
     })
 
     ws.on('error', (err) => {
-      logger.debug({ serverId: entry.serverId, err: err.message }, 'agent stream upstream error')
+      logger.debug({ serverId: entry.serverId, err: err.message }, 'daemon stream upstream error')
       // 'close' fires next and handles reconnect.
     })
   }
@@ -210,4 +210,4 @@ function toStreamUrl(base: string): string {
   return u.toString()
 }
 
-export const agentStreamHub = new AgentStreamHub()
+export const daemonStreamHub = new DaemonStreamHub()

@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 
-import type { AgentHostInfo, AgentSnapshot, StreamFrame, StreamStatusState } from '@/lib/agent'
+import type { DaemonHostInfo, DaemonSnapshot, StreamFrame, StreamStatusState } from '@/lib/daemon'
 
 export type StreamConnection = StreamStatusState | 'error'
 
 export interface ServerStreamState {
   connection: StreamConnection
   detail?: string
-  host?: AgentHostInfo
+  host?: DaemonHostInfo
   sampleIntervalMs?: number
-  snapshot?: AgentSnapshot
+  snapshot?: DaemonSnapshot
   updatedAt?: number
 }
 

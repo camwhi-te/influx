@@ -1,9 +1,9 @@
 /**
- * Client-side mirror of the influx-agent snapshot shape (see AGENT.md). Kept
+ * Client-side mirror of the influxd snapshot shape (see PROTOCOL.md). Kept
  * loose — every field can be missing when the daemon could not collect it.
  */
 
-export type AgentHostInfo = {
+export type DaemonHostInfo = {
   hostname?: string
   os?: string
   platform?: string
@@ -17,13 +17,13 @@ export type AgentHostInfo = {
   cpu_model?: string
   physical_cores?: number
   logical_cores?: number
-  agent_version?: string
+  daemon_version?: string
   tags?: Record<string, string>
   captured_at?: string
   warming_up?: boolean
 }
 
-export type AgentCpu = {
+export type DaemonCpu = {
   model?: string
   physical_cores?: number
   logical_cores?: number
@@ -37,7 +37,7 @@ export type AgentCpu = {
   interrupts_per_s?: number | null
 }
 
-export type AgentMemory = {
+export type DaemonMemory = {
   total?: number
   available?: number
   used?: number
@@ -51,7 +51,7 @@ export type AgentMemory = {
   swap_used_pct?: number
 }
 
-export type AgentDisk = {
+export type DaemonDisk = {
   device?: string
   mountpoint?: string
   fstype?: string
@@ -63,7 +63,7 @@ export type AgentDisk = {
   readonly?: boolean
 }
 
-export type AgentDiskIo = {
+export type DaemonDiskIo = {
   device?: string
   read_bytes_per_s?: number | null
   write_bytes_per_s?: number | null
@@ -73,7 +73,7 @@ export type AgentDiskIo = {
   queue_depth?: number | null
 }
 
-export type AgentNetIf = {
+export type DaemonNetIf = {
   name?: string
   up?: boolean
   mtu?: number
@@ -88,7 +88,7 @@ export type AgentNetIf = {
   tx_drop_per_s?: number | null
 }
 
-export type AgentProcess = {
+export type DaemonProcess = {
   pid?: number
   ppid?: number
   name?: string
@@ -105,16 +105,16 @@ export type AgentProcess = {
   write_bytes_per_s?: number | null
 }
 
-export type AgentSnapshot = {
+export type DaemonSnapshot = {
   type?: string
   schema_version?: number
-  host?: AgentHostInfo
-  cpu?: AgentCpu
-  memory?: AgentMemory
+  host?: DaemonHostInfo
+  cpu?: DaemonCpu
+  memory?: DaemonMemory
   pressure?: Record<string, Record<string, number>>
-  disks?: AgentDisk[]
-  disk_io?: AgentDiskIo[]
-  network?: AgentNetIf[]
+  disks?: DaemonDisk[]
+  disk_io?: DaemonDiskIo[]
+  network?: DaemonNetIf[]
   net_stats?: {
     rx_bytes_per_s?: number | null
     tx_bytes_per_s?: number | null
@@ -128,7 +128,7 @@ export type AgentSnapshot = {
     sleeping?: number
     zombie?: number
     thread_count?: number
-    top?: AgentProcess[]
+    top?: DaemonProcess[]
   }
   sensors?: {
     temperatures?: {
@@ -145,25 +145,25 @@ export type AgentSnapshot = {
   errors?: Record<string, string>
 }
 
-export type AgentReport = {
+export type DaemonReport = {
   schema_version: number
-  agent_version?: string
+  daemon_version?: string
   report_seq: number
   boot_id: string
   window: { start: string; end: string; sample_count: number }
   rollup?: Record<string, { avg: number; min: number; max: number; last: number }>
-  snapshot: AgentSnapshot
+  snapshot: DaemonSnapshot
   events?: { at?: string; kind?: string; detail?: string }[]
 }
 
-export type LatestReport = { capturedAt: string; report: AgentReport } | null
+export type LatestReport = { capturedAt: string; report: DaemonReport } | null
 
-/** Frame shapes pushed over the SSE stream by `agent_stream_hub`. */
+/** Frame shapes pushed over the SSE stream by `daemon_stream_hub`. */
 export type StreamStatusState =
   'idle' | 'connecting' | 'connected' | 'disconnected' | 'unconfigured'
 
 export type StreamFrame =
-  | { type: 'hello'; host: AgentHostInfo; sample_interval_ms: number; agent_version: string }
-  | ({ type: 'snapshot' } & AgentSnapshot)
+  | { type: 'hello'; host: DaemonHostInfo; sample_interval_ms: number; daemon_version: string }
+  | ({ type: 'snapshot' } & DaemonSnapshot)
   | { type: 'status'; state: StreamStatusState; detail?: string }
   | { type: 'error'; code?: string; message?: string }

@@ -3,12 +3,12 @@ import vine from '@vinejs/vine'
 /**
  * Validates the envelope of an ingest report. The `snapshot` and `rollup`
  * bodies are intentionally loose — they are stored verbatim and shaped on read
- * by `#services/agent_protocol`.
+ * by `#services/daemon_protocol`.
  */
-export const agentReportValidator = vine.create(
+export const daemonReportValidator = vine.create(
   vine.object({
     schema_version: vine.number(),
-    agent_version: vine.string().maxLength(64).optional(),
+    daemon_version: vine.string().maxLength(64).optional(),
     report_seq: vine.number().min(0),
     boot_id: vine.string().minLength(1).maxLength(128),
     window: vine.object({

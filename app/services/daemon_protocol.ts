@@ -1,14 +1,14 @@
 /**
- * TypeScript mirror of the influx-agent wire protocol (schema version 1).
- * See AGENT.md for the authoritative definition. Every field is optional on
+ * TypeScript mirror of the influxd wire protocol (schema version 1).
+ * See PROTOCOL.md for the authoritative definition. Every field is optional on
  * read: the daemon omits or nulls any section that failed to collect.
  */
 
-export const AGENT_SCHEMA_VERSION = 1
+export const DAEMON_SCHEMA_VERSION = 1
 
 export type Rollup = { avg: number; min: number; max: number; last: number }
 
-export interface AgentHostInfo {
+export interface DaemonHostInfo {
   hostname?: string
   os?: string
   platform?: string
@@ -22,14 +22,14 @@ export interface AgentHostInfo {
   cpu_model?: string
   physical_cores?: number
   logical_cores?: number
-  agent_version?: string
+  daemon_version?: string
   tags?: Record<string, string>
   captured_at?: string
   monotonic_seq?: number
   warming_up?: boolean
 }
 
-export interface AgentCpu {
+export interface DaemonCpu {
   model?: string
   physical_cores?: number
   logical_cores?: number
@@ -43,7 +43,7 @@ export interface AgentCpu {
   interrupts_per_s?: number | null
 }
 
-export interface AgentMemory {
+export interface DaemonMemory {
   total?: number
   available?: number
   used?: number
@@ -60,7 +60,7 @@ export interface AgentMemory {
   slab?: number
 }
 
-export interface AgentDisk {
+export interface DaemonDisk {
   device?: string
   mountpoint?: string
   fstype?: string
@@ -75,7 +75,7 @@ export interface AgentDisk {
   readonly?: boolean
 }
 
-export interface AgentDiskIo {
+export interface DaemonDiskIo {
   device?: string
   read_bytes_per_s?: number | null
   write_bytes_per_s?: number | null
@@ -87,7 +87,7 @@ export interface AgentDiskIo {
   queue_depth?: number | null
 }
 
-export interface AgentNetIf {
+export interface DaemonNetIf {
   name?: string
   up?: boolean
   mtu?: number
@@ -104,7 +104,7 @@ export interface AgentNetIf {
   tx_drop_per_s?: number | null
 }
 
-export interface AgentListeningSocket {
+export interface DaemonListeningSocket {
   proto?: string
   addr?: string
   port?: number
@@ -112,15 +112,15 @@ export interface AgentListeningSocket {
   process?: string
 }
 
-export interface AgentNetStats {
+export interface DaemonNetStats {
   rx_bytes_per_s?: number | null
   tx_bytes_per_s?: number | null
   tcp_by_state?: Record<string, number>
-  listening_sockets?: AgentListeningSocket[]
+  listening_sockets?: DaemonListeningSocket[]
   tcp_retrans_segs_per_s?: number | null
 }
 
-export interface AgentProcess {
+export interface DaemonProcess {
   pid?: number
   ppid?: number
   name?: string
@@ -138,16 +138,16 @@ export interface AgentProcess {
   write_bytes_per_s?: number | null
 }
 
-export interface AgentProcesses {
+export interface DaemonProcesses {
   total_count?: number
   running?: number
   sleeping?: number
   zombie?: number
   thread_count?: number
-  top?: AgentProcess[]
+  top?: DaemonProcess[]
 }
 
-export interface AgentTemperature {
+export interface DaemonTemperature {
   sensor_key?: string
   label?: string
   temp_c?: number
@@ -155,13 +155,13 @@ export interface AgentTemperature {
   crit_c?: number
 }
 
-export interface AgentSensors {
-  temperatures?: AgentTemperature[]
+export interface DaemonSensors {
+  temperatures?: DaemonTemperature[]
   fans?: { label?: string; rpm?: number }[]
   battery?: { percent?: number; plugged?: boolean; time_left_min?: number }
 }
 
-export interface AgentPressureAxis {
+export interface DaemonPressureAxis {
   some_avg10?: number
   some_avg60?: number
   some_avg300?: number
@@ -170,45 +170,45 @@ export interface AgentPressureAxis {
   full_avg300?: number
 }
 
-export interface AgentSnapshot {
+export interface DaemonSnapshot {
   type?: 'snapshot'
   schema_version?: number
-  host?: AgentHostInfo
-  cpu?: AgentCpu
-  memory?: AgentMemory
+  host?: DaemonHostInfo
+  cpu?: DaemonCpu
+  memory?: DaemonMemory
   pressure?: Record<string, Record<string, number>>
-  disks?: AgentDisk[]
-  disk_io?: AgentDiskIo[]
-  network?: AgentNetIf[]
-  net_stats?: AgentNetStats
-  processes?: AgentProcesses
-  sensors?: AgentSensors
+  disks?: DaemonDisk[]
+  disk_io?: DaemonDiskIo[]
+  network?: DaemonNetIf[]
+  net_stats?: DaemonNetStats
+  processes?: DaemonProcesses
+  sensors?: DaemonSensors
   services?: { failed_units?: { unit?: string; active?: string; sub?: string }[] }
   errors?: Record<string, string>
 }
 
-export interface AgentHello {
+export interface DaemonHello {
   type: 'hello'
-  host: AgentHostInfo
+  host: DaemonHostInfo
   sample_interval_ms: number
-  agent_version: string
+  daemon_version: string
 }
 
-export interface AgentReportEvent {
+export interface DaemonReportEvent {
   at?: string
-  kind?: 'disk_full' | 'temp_crit' | 'oom' | 'service_failed' | 'agent_start' | string
+  kind?: 'disk_full' | 'temp_crit' | 'oom' | 'service_failed' | 'daemon_start' | string
   detail?: string
 }
 
-export interface AgentReport {
+export interface DaemonReport {
   schema_version: number
-  agent_version?: string
+  daemon_version?: string
   report_seq: number
   boot_id: string
   window: { start: string; end: string; sample_count: number }
   rollup?: Record<string, Rollup>
-  snapshot: AgentSnapshot
-  events?: AgentReportEvent[]
+  snapshot: DaemonSnapshot
+  events?: DaemonReportEvent[]
 }
 
 /**
@@ -250,14 +250,14 @@ function max(values: (number | null | undefined)[]): number | null {
 }
 
 /** Picks the busiest real filesystem for a single "disk usage" headline number. */
-function rootDiskUsedPct(disks: AgentDisk[] | undefined): number | null {
+function rootDiskUsedPct(disks: DaemonDisk[] | undefined): number | null {
   if (!disks?.length) return null
   const real = disks.filter((d) => !d.readonly && typeof d.used_pct === 'number')
   const pool = real.length ? real : disks
   return max(pool.map((d) => d.used_pct)) ?? null
 }
 
-function hottestSensor(sensors: AgentSensors | undefined): number | null {
+function hottestSensor(sensors: DaemonSensors | undefined): number | null {
   const temps = sensors?.temperatures ?? []
   if (!temps.length) return null
   // Prefer a CPU-package style sensor, otherwise the hottest reading.
@@ -271,8 +271,8 @@ function hottestSensor(sensors: AgentSensors | undefined): number | null {
  * Extracts the promoted scalar metrics from a report's snapshot. Missing
  * sections yield nulls rather than throwing.
  */
-export function promoteMetrics(report: AgentReport): PromotedMetrics {
-  const s = report.snapshot ?? ({} as AgentSnapshot)
+export function promoteMetrics(report: DaemonReport): PromotedMetrics {
+  const s = report.snapshot ?? ({} as DaemonSnapshot)
   const capturedAt = s.host?.captured_at ?? report.window?.end ?? new Date().toISOString()
 
   return {

@@ -14,7 +14,7 @@ const META: Record<StreamConnection, { label: string; dot: string; text: string 
   },
   disconnected: { label: 'Reconnecting', dot: 'bg-amber-500', text: 'text-muted-foreground' },
   unconfigured: {
-    label: 'No agent URL',
+    label: 'No daemon URL',
     dot: 'bg-muted-foreground',
     text: 'text-muted-foreground',
   },

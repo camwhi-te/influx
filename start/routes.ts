@@ -15,20 +15,20 @@ router.on('/').renderInertia('home', {}).as('home')
 
 /*
 |--------------------------------------------------------------------------
-| Agent API
+| Daemon API
 |--------------------------------------------------------------------------
 |
 | Ingest endpoint for monitoring daemons. Authenticated by a per-server
-| bearer token + HMAC signature (see AGENT.md), not a user session. The
-| "/api/agent/report" path is excluded from CSRF in config/shield.ts.
+| bearer token + HMAC signature (see PROTOCOL.md), not a user session. The
+| "/api/daemon/report" path is excluded from CSRF in config/shield.ts.
 |
 */
 router
   .group(() => {
-    router.post('report', [controllers.AgentReports, 'store']).as('agent.report')
+    router.post('report', [controllers.DaemonReports, 'store']).as('daemon.report')
   })
-  .prefix('api/agent')
-  .use(middleware.agentAuth())
+  .prefix('api/daemon')
+  .use(middleware.daemonAuth())
 
 router
   .group(() => {
@@ -81,16 +81,18 @@ router
                 router.get('settings', [controllers.Servers, 'settings']).as('servers.settings')
 
                 // Realtime metric stream (SSE bridge to the daemon WebSocket)
-                router.get('stream', [controllers.ServerAgent, 'stream']).as('servers.stream')
+                router.get('stream', [controllers.ServerDaemon, 'stream']).as('servers.stream')
 
-                // Agent pairing (from the Settings tab)
+                // Daemon pairing (from the Settings tab)
                 router
-                  .post('agent/key', [controllers.ServerAgent, 'generateKey'])
-                  .as('servers.agent.key')
+                  .post('daemon/key', [controllers.ServerDaemon, 'generateKey'])
+                  .as('servers.daemon.key')
                 router
-                  .delete('agent/key', [controllers.ServerAgent, 'unpair'])
-                  .as('servers.agent.unpair')
-                router.put('agent', [controllers.ServerAgent, 'update']).as('servers.agent.update')
+                  .delete('daemon/key', [controllers.ServerDaemon, 'unpair'])
+                  .as('servers.daemon.unpair')
+                router
+                  .put('daemon', [controllers.ServerDaemon, 'update'])
+                  .as('servers.daemon.update')
               })
               .prefix(':id')
           })

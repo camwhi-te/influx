@@ -14,12 +14,12 @@ export default class ServerTransformer extends BaseTransformer<Server> {
         'createdAt',
         'updatedAt',
       ]),
-      agentPaired: this.resource.agentPaired,
-      agentState: this.resource.agentState,
-      agentListenUrl: this.resource.agentListenUrl,
-      agentVersion: this.resource.agentVersion,
-      agentLastReportAt: this.resource.agentLastReportAt
-        ? this.resource.agentLastReportAt.toISO()
+      daemonPaired: this.resource.daemonPaired,
+      daemonState: this.resource.daemonState,
+      daemonListenUrl: this.resource.daemonListenUrl,
+      daemonVersion: this.resource.daemonVersion,
+      daemonLastReportAt: this.resource.daemonLastReportAt
+        ? this.resource.daemonLastReportAt.toISO()
         : null,
     }
   }
